@@ -145,7 +145,7 @@ def viterbi(brown_dev_words, taglist, known_words, q_values, e_values):
                 for v in S(k):
                     pi_max = float('-inf')
                     w_max = None
-                    for w in S(k-2):
+                    for w in pi[k-2]:
                         #if not w in pi[k-2] or not u in pi[k-2][w]:
                         #    continue
                         q = q_values.get((w,u,v),LOG_PROB_OF_ZERO)
@@ -283,7 +283,7 @@ def main():
     q6_output(nltk_tagged, OUTPUT_PATH + 'B6.txt')
 
     # print total time to run Part B
-    print "Part B time: " + str(time.clock()) + ' sec'
+    print("Part B time: " + str(time.clock()) + ' sec')
     
     globals().update(locals())
 

@@ -121,7 +121,7 @@ def linearscore(unigrams, bigrams, trigrams, corpus):
     scores = []
     for sentence in corpus:
         tokens = [START_SYMBOL]*2+sentence.split()+[STOP_SYMBOL]
-        p = 0
+        sentence_scores = []
         for trigram in nltk.trigrams(tokens):
             bigram = trigram[1:]
             unigram = bigram[1:]
@@ -132,15 +132,20 @@ def linearscore(unigrams, bigrams, trigrams, corpus):
                 break
             biscore = bigrams.get(bigram, MINUS_INFINITY_SENTENCE_LOG_PROB)
             uniscore = unigrams.get(unigram, MINUS_INFINITY_SENTENCE_LOG_PROB)
-            trigram = 2**triscore
-            bigram = 2**biscore
-            unigram = 2**uniscore
+            if MINUS_INFINITY_SENTENCE_LOG_PROB in [triscore,biscore,uniscore]:
+                sentence_scores = [MINUS_INFINITY_SENTENCE_LOG_PROB]
+                break
+            trigram = 2.0**triscore
+            bigram = 2.0**biscore
+            unigram = 2.0**uniscore
             if biscore == MINUS_INFINITY_SENTENCE_LOG_PROB:
                 la -= 1
+                bigram = 0.0
             if uniscore == MINUS_INFINITY_SENTENCE_LOG_PROB:
                 la -= 1
-            p += math.log((trigram + bigram + unigram)/float(la),2)
-        scores.append(p)
+                unigram = 0.0
+            sentence_scores.append(math.log((trigram + bigram + unigram)/float(la),2))
+        scores.append(sum(sentence_scores))
     return scores
 
 DATA_PATH = 'data/'
@@ -149,7 +154,7 @@ OUTPUT_PATH = 'output/'
 # DO NOT MODIFY THE MAIN FUNCTION
 def main():
     # start timer
-    time.clock()
+    start_time = time.time()
 
     # get data
     infile = open(DATA_PATH + 'Brown_train.txt', 'r')
@@ -194,7 +199,11 @@ def main():
     score_output(sample1scores, OUTPUT_PATH + 'Sample1_scored.txt')
     score_output(sample2scores, OUTPUT_PATH + 'Sample2_scored.txt')
 
+    end_time = time.time()
+
     # print total time to run Part A
-    print "Part A time: " + str(time.clock()) + ' sec'
+    print "Part A time: " + str(end_time - start_time) + ' sec'
+
+    globals().update(locals())
 
 if __name__ == "__main__": main()

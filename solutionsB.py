@@ -146,7 +146,6 @@ def viterbi(brown_dev_words, taglist, known_words, q_values, e_values):
     N = len(brown_dev_words)
     i = 0
     for sentence in brown_dev_words:
-        print(str(i))
         i += 1
         T = len(sentence)
         pi = [{START_SYMBOL: {START_SYMBOL: 0.0}}]

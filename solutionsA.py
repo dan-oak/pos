@@ -121,7 +121,6 @@ def linearscore(unigrams, bigrams, trigrams, corpus):
     scores = []
     for sentence in corpus:
         tokens = [START_SYMBOL]*2+sentence.split()+[STOP_SYMBOL]
-        #tokens = sentence.split()
         p = 0
         for trigram in nltk.trigrams(tokens):
             bigram = trigram[1:]

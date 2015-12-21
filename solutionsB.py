@@ -13,12 +13,16 @@ RARE_WORD_MAX_FREQ = 5
 LOG_PROB_OF_ZERO = -1000
 
 
-# TODO: IMPLEMENT THIS FUNCTION
-# Receives a list of tagged sentences and processes each sentence to generate a list of words and a list of tags.
-# Each sentence is a string of space separated "WORD/TAG" tokens, with a newline character in the end.
-# Remember to include start and stop symbols in yout returned lists, as defined by the constants START_SYMBOL and STOP_SYMBOL.
-# brown_words (the list of words) should be a list where every element is a list of the tags of a particular sentence.
-# brown_tags (the list of tags) should be a list where every element is a list of the tags of a particular sentence.
+# Receives a list of tagged sentences and processes each sentence to generate a
+# list of words and a list of tags.
+# Each sentence is a string of space separated "WORD/TAG" tokens, with a
+# newline character in the end.
+# Remember to include start and stop symbols in yout returned lists, as defined
+# by the constants START_SYMBOL and STOP_SYMBOL.
+# brown_words (the list of words) should be a list where every element is a
+# list of the tags of a particular sentence.
+# brown_tags (the list of tags) should be a list where every element is a list
+# of the tags of a particular sentence.
 def split_wordtags(brown_train):
     brown_words = []
     brown_tags = []
@@ -32,9 +36,10 @@ def split_wordtags(brown_train):
     return brown_words, brown_tags
 
 
-# TODO: IMPLEMENT THIS FUNCTION
-# This function takes tags from the training data and calculates tag trigram probabilities.
-# It returns a python dictionary where the keys are tuples that represent the tag trigram, and the values are the log probability of that trigram
+# This function takes tags from the training data and calculates tag trigram
+# probabilities.
+# It returns a python dictionary where the keys are tuples that represent the
+# tag trigram, and the values are the log probability of that trigram
 def calc_trigrams(brown_tags):
     q_values = {}
     trigrams = [trigram for sentence in brown_tags for trigram in nltk.trigrams(sentence)]
@@ -44,7 +49,8 @@ def calc_trigrams(brown_tags):
     q_values = {k: math.log(count,2)-math.log(bigram_c.get(k[:-1]),2) for k,count in trigrams_c.items()}
     return q_values
 
-# This function takes output from calc_trigrams() and outputs it in the proper format
+# This function takes output from calc_trigrams() and outputs it in the proper
+# format
 def q2_output(q_values, filename):
     outfile = open(filename, "w")
     trigrams = q_values.keys()
@@ -55,18 +61,20 @@ def q2_output(q_values, filename):
     outfile.close()
 
 
-# TODO: IMPLEMENT THIS FUNCTION
-# Takes the words from the training data and returns a set of all of the words that occur more than 5 times (use RARE_WORD_MAX_FREQ)
-# brown_words is a python list where every element is a python list of the words of a particular sentence.
+# Takes the words from the training data and returns a set of all of the words
+# that occur more than 5 times (use RARE_WORD_MAX_FREQ)
+# brown_words is a python list where every element is a python list of the
+# words of a particular sentence.
 # Note: words that appear exactly 5 times should be considered rare!
 def calc_known(brown_words):
     brown_words_c = Counter([word for sentence in brown_words for word in sentence])
     known_words = set([word for word,count in brown_words_c.items() if count > RARE_WORD_MAX_FREQ])
     return known_words
 
-# TODO: IMPLEMENT THIS FUNCTION
-# Takes the words from the training data and a set of words that should not be replaced for '_RARE_'
-# Returns the equivalent to brown_words but replacing the unknown words by '_RARE_' (use RARE_SYMBOL constant)
+# Takes the words from the training data and a set of words that should not be
+# replaced for '_RARE_'
+# Returns the equivalent to brown_words but replacing the unknown words by
+# '_RARE_' (use RARE_SYMBOL constant)
 def replace_rare(brown_words, known_words):
     brown_words_rare = [[word in known_words and word or RARE_SYMBOL for word in sentence] for sentence in brown_words]
     return brown_words_rare
@@ -79,10 +87,11 @@ def q3_output(rare, filename):
     outfile.close()
 
 
-# TODO: IMPLEMENT THIS FUNCTION
 # Calculates emission probabilities and creates a set of all possible tags
-# The first return value is a python dictionary where each key is a tuple in which the first element is a word
-# and the second is a tag, and the value is the log probability of the emission of the word given the tag
+# The first return value is a python dictionary where each key is a tuple in
+# which the first element is a word
+# and the second is a tag, and the value is the log probability of the emission
+# of the word given the tag
 # The second return value is a set of all possible tags for this data set
 def calc_emission(brown_words_rare, brown_tags):
     tags_flat = [tag for sentence in brown_tags for tag in sentence]
@@ -106,17 +115,22 @@ def q4_output(e_values, filename):
     outfile.close()
 
 
-# TODO: IMPLEMENT THIS FUNCTION
-# This function takes data to tag (brown_dev_words), a set of all possible tags (taglist), a set of all known words (known_words),
-# trigram probabilities (q_values) and emission probabilities (e_values) and outputs a list where every element is a tagged sentence 
-# (in the WORD/TAG format, separated by spaces and with a newline in the end, just like our input tagged data)
-# brown_dev_words is a python list where every element is a python list of the words of a particular sentence.
+# This function takes data to tag (brown_dev_words), a set of all possible tags
+# (taglist), a set of all known words (known_words),
+# trigram probabilities (q_values) and emission probabilities (e_values) and
+# outputs a list where every element is a tagged sentence 
+# (in the WORD/TAG format, separated by spaces and with a newline in the end,
+# just like our input tagged data)
+# brown_dev_words is a python list where every element is a python list of the
+# words of a particular sentence.
 # taglist is a set of all possible tags
 # known_words is a set of all known words
 # q_values is from the return of calc_trigrams()
 # e_values is from the return of calc_emissions()
-# The return value is a list of tagged sentences in the format "WORD/TAG", separated by spaces. Each sentence is a string with a 
-# terminal newline, not a list of tokens. Remember also that the output should not contain the "_RARE_" symbol, but rather the
+# The return value is a list of tagged sentences in the format "WORD/TAG",
+# separated by spaces. Each sentence is a string with a 
+# terminal newline, not a list of tokens. Remember also that the output should
+# not contain the "_RARE_" symbol, but rather the
 # original words of the sentence!
 def viterbi(brown_dev_words, taglist, known_words, q_values, e_values):
     tagged = []
@@ -195,11 +209,11 @@ def q5_output(tagged, filename):
         outfile.write(sentence)
     outfile.close()
 
-# TODO: IMPLEMENT THIS FUNCTION
 # This function uses nltk to create the taggers described in question 6
 # brown_words and brown_tags is the data to be used in training
 # brown_dev_words is the data that should be tagged
-# The return value is a list of tagged sentences in the format "WORD/TAG", separated by spaces. Each sentence is a string with a 
+# The return value is a list of tagged sentences in the format "WORD/TAG",
+# separated by spaces. Each sentence is a string with a 
 # terminal newline, not a list of tokens. 
 def nltk_tagger(brown_words, brown_tags, brown_dev_words):
     # Hint: use the following line to format data to what NLTK expects for training

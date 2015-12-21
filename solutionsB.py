@@ -5,6 +5,7 @@ import time
 import numpy
 import re
 from collections import Counter
+import pickle
 
 START_SYMBOL = '*'
 STOP_SYMBOL = 'STOP'
@@ -237,68 +238,49 @@ def q6_output(tagged, filename):
 DATA_PATH = 'data/'
 OUTPUT_PATH = 'output/'
 
+def load_data(name):
+    infile = open(DATA_PATH + name + ".txt", "r")
+    data = infile.readlines()
+    infile.close()
+    return date
+
+def save_object(obj, filename):
+    with open(filename, 'wb') as output:
+        pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
+
 def main():
-    # start timer
     time.clock()
 
-    # open Brown training data
-    infile = open(DATA_PATH + "Brown_tagged_train.txt", "r")
-    brown_train = infile.readlines()
-    infile.close()
-
-    # split words and tags, and add start and stop symbols (question 1)
+    brown_train = load_data('Brown_tagged_train')
     brown_words, brown_tags = split_wordtags(brown_train)
-
-    # calculate tag trigram probabilities (question 2)
     q_values = calc_trigrams(brown_tags)
-
-    # question 2 output
+    save_object(q_values, 'objects/q_values.pkl')
     q2_output(q_values, OUTPUT_PATH + 'B2.txt')
 
-    # calculate list of words with count > 5 (question 3)
     known_words = calc_known(brown_words)
-
-    # get a version of brown_words with rare words replace with '_RARE_' (question 3)
+    save_object(known_words, 'objects/known_words.pkl')
     brown_words_rare = replace_rare(brown_words, known_words)
-
-    # question 3 output
     q3_output(brown_words_rare, OUTPUT_PATH + "B3.txt")
 
-    # calculate emission probabilities (question 4)
     e_values, taglist = calc_emission(brown_words_rare, brown_tags)
-
-    # question 4 output
+    save_object(e_values, 'objects/e_values.pkl')
+    save_object(taglist, 'objects/taglist.pkl')
     q4_output(e_values, OUTPUT_PATH + "B4.txt")
 
-    # delete unneceessary data
     del brown_train
     del brown_words_rare
 
-    # open Brown development data (question 5)
-    infile = open(DATA_PATH + "Brown_dev.txt", "r")
-    brown_dev = infile.readlines()
-    infile.close()
-
-    # format Brown development data here
+    brown_dev = load_data('Brown_dev')
     brown_dev_words = []
     for sentence in brown_dev:
         brown_dev_words.append(sentence.split(" ")[:-1])
-
-    # do viterbi on brown_dev_words (question 5)
     viterbi_tagged = viterbi(brown_dev_words, taglist, known_words, q_values, e_values)
-
-    # question 5 output
     q5_output(viterbi_tagged, OUTPUT_PATH + 'B5.txt')
 
-    # do nltk tagging here
     nltk_tagged = nltk_tagger(brown_words, brown_tags, brown_dev_words)
-
-    # question 6 output
     q6_output(nltk_tagged, OUTPUT_PATH + 'B6.txt')
 
-    # print total time to run Part B
     print("Part B time: " + str(time.clock()) + ' sec')
-    
     globals().update(locals())
 
-if __name__ == "__main__": main()
+#if __name__ == "__main__": main()

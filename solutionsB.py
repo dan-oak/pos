@@ -242,7 +242,7 @@ def load_data(name):
     infile = open(DATA_PATH + name + ".txt", "r")
     data = infile.readlines()
     infile.close()
-    return date
+    return data
 
 def save_object(obj, filename):
     with open(filename, 'wb') as output:
@@ -283,4 +283,4 @@ def main():
     print("Part B time: " + str(time.clock()) + ' sec')
     globals().update(locals())
 
-#if __name__ == "__main__": main()
+if __name__ == "__main__": main()

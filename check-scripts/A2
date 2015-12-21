@@ -1,0 +1,3 @@
+#!/bin/sh
+cd output
+head -3 A2.uni.txt A2.bi.txt A2.tri.txt

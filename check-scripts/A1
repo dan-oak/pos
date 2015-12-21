@@ -1,0 +1,2 @@
+#!/bin/sh
+egrep "(UNIGRAM captain)|(BIGRAM and religio)|(TRIGRAM and not (a|by|come))" output/A1.txt

@@ -746,12 +746,36 @@ asciidoc.install();
 </div>
 </div>
 <div class="sect1">
+<h2 id="_огляд">Огляд</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Розглядаємо задачу морфологічної розмітки граматично побудованого речення
+англійською мовою.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_постановка_задачі">Постановка задачі</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Визначити частини мови слів речення англійською мовою.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_частини_мови">Частини мови</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Для спрощення моделі використанні лише загальні типи частин мови:
+ADJ ADP ADV CONJ DET NOUN NUM PRON PRT STOP VERB
+Пунктуаційні знаки позначаються як крапка, а невідомі частини мови — X.</p></div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_моделі_маркова">Моделі Маркова</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>Моделі Маркова це стохастичні моделі, які застосовують у моделювання систем, що
 випадково змінюються, де передбачається, що майбутні стани залежать тільки від
-поточного стану, а не від послідовності подій, які передували йому.<a href="#1">[1]</a> Як
+поточного стану, і не від послідовності подій, які передували йому.<a href="#1">[1]</a> Як
 правило, це припущення робить модель системи більш адекватною<a href="#2">[2]</a>(c.28).</p></div>
+<div class="paragraph"><p>Дискретний ланцюг Маркова можна представити як скінченний ймовірнісний
+перетворювач<a href="#3">[3]</a>(Wighted automata).</p></div>
+<div class="paragraph"><p>Прихована модель Маркова</p></div>
 </div>
 </div>
 <div class="sect1">
@@ -770,6 +794,11 @@ asciidoc.install();
   Чернівці: Чернівецький національний університет, 2014. — 519 с.
 </p>
 </li>
+<li>
+<p>
+<a id="3"></a>[3] <a href="https://en.wikipedia.org/wiki/Finite_state_transducer">https://en.wikipedia.org/wiki/Finite_state_transducer</a>
+</p>
+</li>
 </ul></div>
 </div>
 </div>
@@ -778,7 +807,7 @@ asciidoc.install();
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br />
-Last updated 2015-12-10 19:29:41 EET
+Last updated 2015-12-22 08:38:23 EET
 </div>
 </div>
 </body>

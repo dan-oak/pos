@@ -202,7 +202,7 @@ def main():
     end_time = time.time()
 
     # print total time to run Part A
-    print "Part A time: " + str(end_time - start_time) + ' sec'
+    print("Part A time: " + str(end_time - start_time) + ' sec')
 
     globals().update(locals())
 

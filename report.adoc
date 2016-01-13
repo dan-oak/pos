@@ -29,20 +29,27 @@ ADJ ADP ADV CONJ DET NOUN NUM PRON PRT STOP VERB
 Дискретний ланцюг Маркова можна представити як скінченний ймовірнісний
 перетворювач<<3>>(Wighted automata).
 
-=== Прихована модель Маркова
+=== Trigram Hidden Markov Models<<4>>
 
-pass
+Our goal is to build a model whose input is a sentence. for example
 
-== Trigram probabilities
+the dog saw a cat
 
-pass
+and whose output is a tag sequence, for example
+
+D N V D N
+
+We will use latexmath:[$x_1 \ldots  x_n$] to denote the input and $y_1 \ldots  y_n$ to
+denote the output.
 
 [bibliography]
 == Список літератури
 
 [bibliography]
 - [[[1]]] Сучасна теорія випадкових процесів // Ясинський. В.К. — Чернівці:
-  Видавничий дім "Родовід", 2004. -292 с.  
+  Видавничий дім "Родовід", 2004. -292 с.
 - [[[2]]] Математичне моделювання : навчальний посібник // Маценко В.Г. —
   Чернівці: Чернівецький національний університет, 2014. — 519 с.
 - [[[3]]] https://en.wikipedia.org/wiki/Finite_state_transducer
+- [[[4]]] Tagging Problems, and Hidden Markov Models - Columbia University
+  http://www.cs.columbia.edu/~mcollins/hmms-spring2013.pdf

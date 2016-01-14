@@ -1,40 +1,77 @@
+"""
+Part of speech tagging
+"""
+
+
 import nltk
+# Natural Language Toolkit
+# http://www.nltk.org/
+
 from math import log
 from time import clock
-import numpy
-import re
-from collections import Counter
-import pickle
 
-START_SYMBOL = '*'
-STOP_SYMBOL = 'STOP'
-RARE_SYMBOL = '_RARE_'
+import numpy
+# Scientific computing
+# http://www.numpy.org/
+
+import re
+# Regular Expressions
+
+from collections import Counter
+
+import pickle
+# A liquid or marinade :) uhmm... I mean...
+# Binary protocols for serializing and de-serializing object structures
+# https://docs.python.org/3/library/pickle.html
+
+
+# Start and stop symbols embraces a sentence.
+STAR = '*'
+STOP = 'STOP'
+
+# for smoothing
+RARE = '_RARE_'
+
 RARE_WORD_MAX_FREQ = 5
+
+# When probability is zero, its logarithm is undefined, instead we use big
+# negative number to denote log(0)
+# NOTE: float('-inf') maybe?
+#       http://stackoverflow.com/questions/1628026/python-infinity-any-caveats
 LOG_OF_ZERO = -1000
 
 
-# Receives a list of tagged sentences and processes each sentence to generate a
-# list of words and a list of tags.
-# Each sentence is a string of space separated "WORD/TAG" tokens, with a
-# newline character in the end.
-# Remember to include start and stop symbols in yout returned lists, as defined
-# by the constants START_SYMBOL and STOP_SYMBOL.
-# brown_words (the list of words) should be a list where every element is a
-# list of the tags of a particular sentence.
-# brown_tags (the list of tags) should be a list where every element is a list
-# of the tags of a particular sentence.
-def split_wordtags(brown_train):
-    brown_words = []
-    brown_tags = []
-    for sentence in brown_train:
+def split_wordtags(sentences):
+    """
+    Receives a list of tagged sentences and processes each sentence to generate
+    a list of words and a list of tags.
+    Start and stop symbols are included in returned lists, as defined by the
+    constants STAR and STOP respectively.
+
+    Parameters
+    ----------
+    sentences : list of str
+        Each sentence is a string of space-separated "WORD/TAG" tokens, with a
+        newline character in the end.
+
+    Returns
+    -------
+    words, tags : 2d lists of str
+        lists where every element is a list of the words/tags of a particular
+        sentence
+
+    """
+    words = []
+    tags  = []
+    for sentence in sentences:
         sentence_split = sentence.split()
-        word_n_tag = [re.split(r'(^.+)/([A-Z.]+$)', pair)[1:3] \
+        word_tag = [re.split(r'(^.+)/([A-Z.]+$)', pair)[1:3] \
                 for pair in sentence_split]
-        word_n_tag = [[START_SYMBOL]*2]*2+word_n_tag+[[STOP_SYMBOL]*2]
-        word_n_tag_transposed = numpy.array(word_n_tag).transpose()
-        brown_words.append(list(word_n_tag_transposed[0]))
-        brown_tags.append(list(word_n_tag_transposed[1]))
-    return brown_words, brown_tags
+        word_tag = [[STAR]*2]*2 + word_tag + [[STOP]*2]
+        word_tag_transposed = numpy.array(word_tag).transpose()
+        words.append(list(word_tag_transposed[0]))
+        tags .append(list(word_tag_transposed[1]))
+    return words, tags
 
 
 # This function takes tags from the training data and calculates tag trigram
@@ -80,9 +117,9 @@ def calc_known(brown_words):
 # Takes the words from the training data and a set of words that should not be
 # replaced for '_RARE_'
 # Returns the equivalent to brown_words but replacing the unknown words by
-# '_RARE_' (use RARE_SYMBOL constant)
+# '_RARE_' (use RARE constant)
 def replace_rare(brown_words, known_words):
-    brown_words_rare = [[word in known_words and word or RARE_SYMBOL for word in sentence] for sentence in brown_words]
+    brown_words_rare = [[word in known_words and word or RARE for word in sentence] for sentence in brown_words]
     return brown_words_rare
 
 # This function takes the ouput from replace_rare and outputs it to a file
@@ -141,12 +178,12 @@ def q4_output(e_values, filename):
 # original words of the sentence!
 def viterbi(brown_dev_words, taglist, known_words, q_values, e_values):
     tagged = []
-    tags = taglist.difference({START_SYMBOL,STOP_SYMBOL})
+    tags = taglist.difference({STAR,STOP})
     def S(n):
         if n < 2:
-            return [START_SYMBOL]
+            return [STAR]
         elif n == T+2:
-            return [STOP_SYMBOL]
+            return [STOP]
         else:
             return tags
     N = len(brown_dev_words)
@@ -154,7 +191,7 @@ def viterbi(brown_dev_words, taglist, known_words, q_values, e_values):
     for sentence in brown_dev_words:
         i += 1
         T = len(sentence)
-        pi = [{START_SYMBOL: {START_SYMBOL: 0.0}}]
+        pi = [{STAR: {STAR: 0.0}}]
         bp = [None]
         for k in range(2,T+2):
             pi.append({})
@@ -175,7 +212,7 @@ def viterbi(brown_dev_words, taglist, known_words, q_values, e_values):
                             p = pi[k-2][w][u]
                             e_word = sentence[k-2]
                             if not e_word in known_words:
-                                e_word = RARE_SYMBOL
+                                e_word = RARE
                             if not (e_word,v) in e_values:
                                 s = LOG_OF_ZERO
                             else:
@@ -192,7 +229,7 @@ def viterbi(brown_dev_words, taglist, known_words, q_values, e_values):
         pi_max = float('-inf')
         for u in S(T):
             for v in S(T+1):
-                q = q_values.get((u,v,STOP_SYMBOL),LOG_OF_ZERO)
+                q = q_values.get((u,v,STOP),LOG_OF_ZERO)
                 if q == LOG_OF_ZERO:
                     s = q
                 else:

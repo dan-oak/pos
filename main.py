@@ -1,7 +1,10 @@
 """
 Part of speech tagging
+Chernivtsi National University
+Danylo Dubinin
 """
 
+" 1. Imports "
 
 import nltk
 # Natural Language Toolkit
@@ -25,14 +28,18 @@ import pickle
 # https://docs.python.org/3/library/pickle.html
 
 
-# Start and stop symbols embraces a sentence.
+" 2. Global parameters and constants "
+
+" Start and stop symbols embraces sentences. "
 STAR = '*'
 STOP = 'STOP'
 
-# for smoothing
+" for smoothing "
 RARE = '_RARE_'
 
-RARE_WORD_MAX_FREQ = 5
+" Maximum number of occurances a word must have to be considered rare "
+# TODO: parameter identification
+RARE_MAX_FREQ = 5
 
 # When probability is zero, its logarithm is undefined, instead we use big
 # negative number to denote log(0)
@@ -40,6 +47,8 @@ RARE_WORD_MAX_FREQ = 5
 #       http://stackoverflow.com/questions/1628026/python-infinity-any-caveats
 LOG_OF_ZERO = -1000
 
+
+" 3. Function definitions "
 
 def split_wordtags(sentences):
     """
@@ -73,15 +82,25 @@ def split_wordtags(sentences):
         tags .append(list(word_tag_transposed[1]))
     return words, tags
 
+def calculate_q(tags):
+    """         
+    Takes tags from the training data and calculates tag trigram probabilities.  
 
-# This function takes tags from the training data and calculates tag trigram
-# probabilities.
-# It returns a python dictionary where the keys are tuples that represent the
-# tag trigram, and the values are the log probability of that trigram
-def calc_trigrams(brown_tags):
-    trigrams = [trigram for sentence in brown_tags \
+    Parameters
+    ----------
+        tags : list of list of str
+            Each element of tags list is list of tags of particular sentence. 
+
+    Returns
+    -------
+        q_values : dict of tuple:float
+            The keys are tuples of str that represent the tag trigram.
+            The values are the float log probability of that trigram.
+
+    """
+    trigrams = [trigram for sentence in tags \
             for trigram in nltk.trigrams(sentence)]
-    bigrams  = [bigram  for sentence in brown_tags \
+    bigrams  = [bigram  for sentence in tags \
             for bigram  in nltk.bigrams(sentence)]
     trigrams_c = Counter(trigrams)
     bigram_c   = Counter(bigrams )
@@ -89,29 +108,41 @@ def calc_trigrams(brown_tags):
             for trigram,count in trigrams_c.items()}
     return q_values
 
-# This function takes output from calc_trigrams() and outputs it in the proper
+# This function takes output from calculate_q() and outputs it in the proper
 # format
+# TODO: pickle it!
+# TODO: docstringificate
 def q2_output(q_values, filename):
     outfile = open(filename, "w")
     trigrams = list(q_values.keys())
     trigrams.sort()
     for trigram in trigrams:
-        output = " ".join(['TRIGRAM', trigram[0], trigram[1], trigram[2], \
-                str(q_values[trigram])])
+        output = " ".join(['TRIGRAM']+ list(trigram)+ [str(q_values[trigram])]])
         outfile.write(output + '\n')
     outfile.close()
 
-
-# Takes the words from the training data and returns a set of all of the words
-# that occur more than 5 times (use RARE_WORD_MAX_FREQ)
 # brown_words is a python list where every element is a python list of the
 # words of a particular sentence.
-# Note: words that appear exactly 5 times should be considered rare!
-def calc_known(brown_words):
-    brown_words_c = Counter([word for sentence in brown_words \
-            for word in sentence])
-    known_words = set([word for word,count in brown_words_c.items() \
-            if count > RARE_WORD_MAX_FREQ])
+def calculate_known(words):
+    """
+    Takes the words from the training data and returns a set of all of the words
+    that occur more than RARE_MAX_FREQ.
+
+    Parameters
+    ----------
+        words : list of list of str
+            Each element of sentence_words is a list with str words of a
+            particular sentence enclosed with STAR and STOP symbols.       
+
+    Returns
+    -------
+        known_words : set of str
+            Set of known words.
+
+    """
+    words_count = Counter([word for sentence in words for word in sentence])
+    known_words = set([word for word,count in words_count.items() \
+            if count > RARE_MAX_FREQ])
     return known_words
 
 # Takes the words from the training data and a set of words that should not be
@@ -169,7 +200,7 @@ def q4_output(e_values, filename):
 # words of a particular sentence.
 # taglist is a set of all possible tags
 # known_words is a set of all known words
-# q_values is from the return of calc_trigrams()
+# q_values is from the return of calculate_q()
 # e_values is from the return of calc_emissions()
 # The return value is a list of tagged sentences in the format "WORD/TAG",
 # separated by spaces. Each sentence is a string with a
@@ -300,11 +331,11 @@ def main():
 
     brown_train = load_data('Brown_tagged_train')
     brown_words, brown_tags = split_wordtags(brown_train)
-    q_values = calc_trigrams(brown_tags)
+    q_values = calculate_q(brown_tags)
     save_object(q_values, 'objects/q_values.pkl')
     q2_output(q_values, OUTPUT_PATH + 'B2.txt')
 
-    known_words = calc_known(brown_words)
+    known_words = calculate_known(brown_words)
     save_object(known_words, 'objects/known_words.pkl')
     brown_words_rare = replace_rare(brown_words, known_words)
     q3_output(brown_words_rare, OUTPUT_PATH + "B3.txt")

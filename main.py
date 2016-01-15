@@ -4,7 +4,10 @@ Chernivtsi National University
 Danylo Dubinin
 """
 
-" 1. Imports "
+"
+1. Imports
+-------------------------------------------------------------------------------
+"
 
 import nltk
 # Natural Language Toolkit
@@ -28,7 +31,10 @@ import pickle
 # https://docs.python.org/3/library/pickle.html
 
 
-" 2. Global parameters and constants "
+"
+2. Global parameters and constants
+-------------------------------------------------------------------------------
+"
 
 " Start and stop symbols embraces sentences. "
 STAR = '*'
@@ -48,7 +54,10 @@ RARE_MAX_FREQ = 5
 LOG_OF_ZERO = -1000
 
 
-" 3. Function definitions "
+"
+3. Function definitions
+-------------------------------------------------------------------------------
+"
 
 def split_wordtags(sentences):
     """
@@ -59,7 +68,7 @@ def split_wordtags(sentences):
 
     Parameters
     ----------
-    sentences : list of str
+    sentences : list of list of str
         Each sentence is a string of space-separated "WORD/TAG" tokens, with a
         newline character in the end.
 
@@ -83,19 +92,19 @@ def split_wordtags(sentences):
     return words, tags
 
 def calculate_q(tags):
-    """         
-    Takes tags from the training data and calculates tag trigram probabilities.  
+    """
+    Takes tags from the training data and calculates tag trigram probabilities.
 
     Parameters
     ----------
-        tags : list of list of str
-            Each element of tags list is list of tags of particular sentence. 
+    tags : list of list of str
+        Each element of tags list is list of tags of particular sentence.
 
     Returns
     -------
-        q_values : dict of tuple:float
-            The keys are tuples of str that represent the tag trigram.
-            The values are the float log probability of that trigram.
+    q_values : dict of tuple:float
+        The keys are tuples of str that represent the tag trigram.
+        The values are the float log probability of that trigram.
 
     """
     trigrams = [trigram for sentence in tags \
@@ -108,36 +117,21 @@ def calculate_q(tags):
             for trigram,count in trigrams_c.items()}
     return q_values
 
-# This function takes output from calculate_q() and outputs it in the proper
-# format
-# TODO: pickle it!
-# TODO: docstringificate
-def q2_output(q_values, filename):
-    outfile = open(filename, "w")
-    trigrams = list(q_values.keys())
-    trigrams.sort()
-    for trigram in trigrams:
-        output = " ".join(['TRIGRAM']+ list(trigram)+ [str(q_values[trigram])]])
-        outfile.write(output + '\n')
-    outfile.close()
-
-# brown_words is a python list where every element is a python list of the
-# words of a particular sentence.
 def calculate_known(words):
     """
-    Takes the words from the training data and returns a set of all of the words
-    that occur more than RARE_MAX_FREQ.
+    Takes the words from the training data and returns a set of all of the
+    words that occur more than RARE_MAX_FREQ
 
     Parameters
     ----------
-        words : list of list of str
-            Each element of sentence_words is a list with str words of a
-            particular sentence enclosed with STAR and STOP symbols.       
+    words : list of list of str
+        Each element of sentence_words is a list with str words of a particular
+        sentence enclosed with STAR and STOP symbols.
 
     Returns
     -------
-        known_words : set of str
-            Set of known words.
+    known_words : set of str
+        Set of known words.
 
     """
     words_count = Counter([word for sentence in words for word in sentence])
@@ -145,21 +139,26 @@ def calculate_known(words):
             if count > RARE_MAX_FREQ])
     return known_words
 
-# Takes the words from the training data and a set of words that should not be
-# replaced for '_RARE_'
-# Returns the equivalent to brown_words but replacing the unknown words by
-# '_RARE_' (use RARE constant)
-def replace_rare(brown_words, known_words):
-    brown_words_rare = [[word in known_words and word or RARE for word in sentence] for sentence in brown_words]
-    return brown_words_rare
+def replace_rare(sentences, known_words):
+    """
+    Replaces rare words with RARE symbol.
 
-# This function takes the ouput from replace_rare and outputs it to a file
-def q3_output(rare, filename):
-    outfile = open(filename, 'w')
-    for sentence in rare:
-        outfile.write(' '.join(sentence[2:-1]) + '\n')
-    outfile.close()
+    Parameters
+    ----------
+    sentences : list of list of str
+        Each sentence is a string of space-separated "WORD/TAG" tokens, with a
+        newline character in the end.
 
+    Returns
+    -------
+    replaced : list of list of str
+        List with the same structure as sentences but with words that is not in
+        known_words replaced by RARE.
+
+    """
+    replaced = [[word in known_words and word or RARE for word in sentence]
+            for sentence in sentences]
+    return replaced
 
 # Calculates emission probabilities and creates a set of all possible tags
 # The first return value is a python dictionary where each key is a tuple in
@@ -179,16 +178,10 @@ def calc_emission(brown_words_rare, brown_tags):
     taglist = set(tags_flat)
     return e_values, taglist
 
-# This function takes the output from calc_emissions() and outputs it
-def q4_output(e_values, filename):
-    outfile = open(filename, "w")
-    emissions = list(e_values.keys())
-    emissions.sort()
-    for item in emissions:
-        output = " ".join([item[0], item[1], str(e_values[item])])
-        outfile.write(output + '\n')
-    outfile.close()
-
+"
+3.a Viterbi algorithm
+-------------------------------------------------------------------------------
+"
 
 # This function takes data to tag (brown_dev_words), a set of all possible tags
 # (taglist), a set of all known words (known_words),
@@ -277,12 +270,10 @@ def viterbi(brown_dev_words, taglist, known_words, q_values, e_values):
                 for pair in zip(sentence,y[2:])])+" \n")
     return tagged
 
-# This function takes the output of viterbi() and outputs it to file
-def q5_output(tagged, filename):
-    outfile = open(filename, 'w')
-    for sentence in tagged:
-        outfile.write(sentence)
-    outfile.close()
+"
+3.b NLTK native tagging
+-------------------------------------------------------------------------------
+"
 
 # This function uses nltk to create the taggers described in question 6
 # brown_words and brown_tags is the data to be used in training
@@ -306,6 +297,49 @@ def nltk_tagger(brown_words, brown_tags, brown_dev_words):
             for tokens in tagged]
     return tagged
 
+
+"
+4. Input/Output utilities
+-------------------------------------------------------------------------------
+"
+
+# This function takes output from calculate_q() and outputs it in the proper
+# format
+# TODO: pickle it!?
+# TODO: docstringificate
+def q2_output(q_values, filename):
+    outfile = open(filename, "w")
+    trigrams = list(q_values.keys())
+    trigrams.sort()
+    for trigram in trigrams:
+        line = " ".join(['TRIGRAM']+list(trigram)+[str(q_values[trigram])]])
+        outfile.write(line + '\n')
+    outfile.close()
+
+# This function takes the ouput from replace_rare and outputs it to a file
+def q3_output(rare, filename):
+    outfile = open(filename, 'w')
+    for sentence in rare:
+        outfile.write(' '.join(sentence[2:-1]) + '\n')
+    outfile.close()
+
+# This function takes the output from calc_emissions() and outputs it
+def q4_output(e_values, filename):
+    outfile = open(filename, "w")
+    emissions = list(e_values.keys())
+    emissions.sort()
+    for item in emissions:
+        output = " ".join([item[0], item[1], str(e_values[item])])
+        outfile.write(output + '\n')
+    outfile.close()
+
+# This function takes the output of viterbi() and outputs it to file
+def q5_output(tagged, filename):
+    outfile = open(filename, 'w')
+    for sentence in tagged:
+        outfile.write(sentence)
+    outfile.close()
+
 # This function takes the output of nltk_tagger() and outputs it to file
 def q6_output(tagged, filename):
     outfile = open(filename, 'w')
@@ -326,7 +360,16 @@ def save_object(obj, filename):
     with open(filename, 'wb') as output:
         pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
 
+
+"
+5. Main
+-------------------------------------------------------------------------------
+"
+
 def main():
+    # FIXME: clock() returns seconds elapsed since the FIRST CALL to this
+    # function, as a floating point number, so if one want to run main()
+    # mutliple times, final timing output will be not correct.
     clock()
 
     brown_train = load_data('Brown_tagged_train')

@@ -1,5 +1,5 @@
 import pickle
-import solutionsB
+import main
 import nltk
 
 names = 'e_values known_words q_values taglist'.split()
@@ -14,7 +14,7 @@ while not input_string in ['q','quit','exit']:
         input_string = 'Enter an English sentence to tag its tokens with the respective parts of speech, -- this is an example.'
         print(input_string)
     else:
-        input_string = raw_input('Sentence > ')
+        input_string = input('Sentence > ')
     sentence = nltk.word_tokenize(input_string)
-    tagged = solutionsB.viterbi([sentence], objects['taglist'], objects['known_words'], objects['q_values'], objects['e_values'])
+    tagged = main.viterbi([sentence], objects['taglist'], objects['known_words'], objects['q_values'], objects['e_values'])
     print('Tagged : ' + tagged[0].strip())

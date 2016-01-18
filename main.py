@@ -1,13 +1,13 @@
-"""
+"""""
 Part of speech tagging
 Chernivtsi National University
 Danylo Dubinin
-"""
+"""""
 
-"
+"""
 1. Imports
 -------------------------------------------------------------------------------
-"
+"""
 
 import nltk
 # Natural Language Toolkit
@@ -31,19 +31,19 @@ import pickle
 # https://docs.python.org/3/library/pickle.html
 
 
-"
+"""
 2. Global parameters and constants
 -------------------------------------------------------------------------------
-"
+"""
 
-" Start and stop symbols embraces sentences. "
+""" Start and stop symbols embraces sentences. """
 STAR = '*'
 STOP = 'STOP'
 
-" for smoothing "
+""" for smoothing """
 RARE = '_RARE_'
 
-" Maximum number of occurances a word must have to be considered rare "
+""" Maximum number of occurances a word must have to be considered rare """
 # TODO: parameter identification
 RARE_MAX_FREQ = 5
 
@@ -54,10 +54,10 @@ RARE_MAX_FREQ = 5
 LOG_OF_ZERO = -1000
 
 
-"
+"""
 3. Function definitions
 -------------------------------------------------------------------------------
-"
+"""
 
 def split_wordtags(sentences):
     """
@@ -75,7 +75,7 @@ def split_wordtags(sentences):
     Returns
     -------
     words, tags : 2d lists of str
-        lists where every element is a list of the words/tags of a particular
+        Lists where every element is a list of the words/tags of a particular
         sentence
 
     """
@@ -160,16 +160,31 @@ def replace_rare(sentences, known_words):
             for sentence in sentences]
     return replaced
 
-# Calculates emission probabilities and creates a set of all possible tags
+# 
 # The first return value is a python dictionary where each key is a tuple in
 # which the first element is a word
 # and the second is a tag, and the value is the log probability of the emission
 # of the word given the tag
 # The second return value is a set of all possible tags for this data set
-def calc_emission(brown_words_rare, brown_tags):
-    tags_flat = [tag for sentence in brown_tags for tag in sentence]
-    words_flat = [word for sentence in brown_words_rare for word in sentence]
-    assert len(tags_flat) == len(words_flat)
+# FIXME: total nonesence. extremely bad design
+def calculate_e(toks, tags):
+    """
+    Calculates emission probabilities and creates a set of all possible tags.
+
+    Parameters
+    ----------
+    toks : list of list of str
+        Each sentence is a string of space-separated "WORD/TAG" tokens, with a
+        newline character in the end.
+    tags : list of list of str 
+        Each element of tags list is list of tags of particular sentence.
+
+    Returns
+    -------
+
+    """
+    tags_flat  = [tag  for sentence in tags for tag  in sentence]
+    words_flat = [word for sentence in toks for word in sentence]
     tags_c = Counter(tags_flat)
     word_tag = zip(words_flat, tags_flat)
     word_tag_c = Counter(word_tag)
@@ -178,10 +193,10 @@ def calc_emission(brown_words_rare, brown_tags):
     taglist = set(tags_flat)
     return e_values, taglist
 
-"
+"""
 3.a Viterbi algorithm
 -------------------------------------------------------------------------------
-"
+"""
 
 # This function takes data to tag (brown_dev_words), a set of all possible tags
 # (taglist), a set of all known words (known_words),
@@ -194,15 +209,19 @@ def calc_emission(brown_words_rare, brown_tags):
 # taglist is a set of all possible tags
 # known_words is a set of all known words
 # q_values is from the return of calculate_q()
-# e_values is from the return of calc_emissions()
+# e_values is from the return of calculate_e()
 # The return value is a list of tagged sentences in the format "WORD/TAG",
 # separated by spaces. Each sentence is a string with a
 # terminal newline, not a list of tokens. Remember also that the output should
 # not contain the "_RARE_" symbol, but rather the
 # original words of the sentence!
-def viterbi(brown_dev_words, taglist, known_words, q_values, e_values):
+def viterbi(dev_words, tagset, known_words, Q, E):
+    """
+
+
+    """
     tagged = []
-    tags = taglist.difference({STAR,STOP})
+    tags = tagset.difference({STAR,STOP})
     def S(n):
         if n < 2:
             return [STAR]
@@ -210,9 +229,9 @@ def viterbi(brown_dev_words, taglist, known_words, q_values, e_values):
             return [STOP]
         else:
             return tags
-    N = len(brown_dev_words)
+    N = len(dev_words)
     i = 0
-    for sentence in brown_dev_words:
+    for sentence in dev_words:
         i += 1
         T = len(sentence)
         pi = [{STAR: {STAR: 0.0}}]
@@ -229,7 +248,7 @@ def viterbi(brown_dev_words, taglist, known_words, q_values, e_values):
                     for w in pi[k-2]:
                         #if not w in pi[k-2] or not u in pi[k-2][w]:
                         #    continue
-                        q = q_values.get((w,u,v),LOG_OF_ZERO)
+                        q = Q.get((w,u,v),LOG_OF_ZERO)
                         if q == LOG_OF_ZERO:
                             s = q
                         else:
@@ -237,10 +256,10 @@ def viterbi(brown_dev_words, taglist, known_words, q_values, e_values):
                             e_word = sentence[k-2]
                             if not e_word in known_words:
                                 e_word = RARE
-                            if not (e_word,v) in e_values:
+                            if not (e_word,v) in E:
                                 s = LOG_OF_ZERO
                             else:
-                                e = e_values[e_word,v]
+                                e = E[e_word,v]
                                 s = p + q + e
                         if s > pi_max:
                             pi_max = s
@@ -253,7 +272,7 @@ def viterbi(brown_dev_words, taglist, known_words, q_values, e_values):
         pi_max = float('-inf')
         for u in S(T):
             for v in S(T+1):
-                q = q_values.get((u,v,STOP),LOG_OF_ZERO)
+                q = Q.get((u,v,STOP),LOG_OF_ZERO)
                 if q == LOG_OF_ZERO:
                     s = q
                 else:
@@ -270,10 +289,10 @@ def viterbi(brown_dev_words, taglist, known_words, q_values, e_values):
                 for pair in zip(sentence,y[2:])])+" \n")
     return tagged
 
-"
+"""
 3.b NLTK native tagging
 -------------------------------------------------------------------------------
-"
+"""
 
 # This function uses nltk to create the taggers described in question 6
 # brown_words and brown_tags is the data to be used in training
@@ -298,50 +317,56 @@ def nltk_tagger(brown_words, brown_tags, brown_dev_words):
     return tagged
 
 
-"
-4. Input/Output utilities
+"""
+4. Input/Output
 -------------------------------------------------------------------------------
-"
+"""
+
+"""
+4.a Parameters
+
+"""
+
+""" Delimiter """
+DEL = " "
+
+"""
+4.b Function definitions
+
+"""
 
 # This function takes output from calculate_q() and outputs it in the proper
 # format
 # TODO: pickle it!?
 # TODO: docstringificate
-def q2_output(q_values, filename):
+def output_q(q_values, filename):
     outfile = open(filename, "w")
     trigrams = list(q_values.keys())
     trigrams.sort()
     for trigram in trigrams:
-        line = " ".join(['TRIGRAM']+list(trigram)+[str(q_values[trigram])]])
+        line = DEL.join(list(trigram) + [str(q_values[trigram])])
         outfile.write(line + '\n')
     outfile.close()
 
-# This function takes the ouput from replace_rare and outputs it to a file
-def q3_output(rare, filename):
-    outfile = open(filename, 'w')
-    for sentence in rare:
-        outfile.write(' '.join(sentence[2:-1]) + '\n')
-    outfile.close()
-
-# This function takes the output from calc_emissions() and outputs it
-def q4_output(e_values, filename):
+# This function takes the output from calculate_es() and outputs it
+def output_e(e_values, filename):
     outfile = open(filename, "w")
     emissions = list(e_values.keys())
     emissions.sort()
     for item in emissions:
-        output = " ".join([item[0], item[1], str(e_values[item])])
+        output = DEL.join([item[0], item[1], str(e_values[item])])
         outfile.write(output + '\n')
     outfile.close()
 
 # This function takes the output of viterbi() and outputs it to file
-def q5_output(tagged, filename):
+def output_viterbi_tagged(tagged, filename):
     outfile = open(filename, 'w')
     for sentence in tagged:
         outfile.write(sentence)
     outfile.close()
 
 # This function takes the output of nltk_tagger() and outputs it to file
-def q6_output(tagged, filename):
+def output_nltk_tagged(tagged, filename):
     outfile = open(filename, 'w')
     for sentence in tagged:
         outfile.write(sentence)
@@ -361,10 +386,10 @@ def save_object(obj, filename):
         pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
 
 
-"
+"""
 5. Main
 -------------------------------------------------------------------------------
-"
+"""
 
 def main():
     # FIXME: clock() returns seconds elapsed since the FIRST CALL to this
@@ -372,35 +397,34 @@ def main():
     # mutliple times, final timing output will be not correct.
     clock()
 
-    brown_train = load_data('Brown_tagged_train')
-    brown_words, brown_tags = split_wordtags(brown_train)
-    q_values = calculate_q(brown_tags)
+    train = load_data('Brown_tagged_train')
+    words, tags = split_wordtags(train)
+    q_values = calculate_q(tags)
     save_object(q_values, 'objects/q_values.pkl')
-    q2_output(q_values, OUTPUT_PATH + 'B2.txt')
+    output_q(q_values, OUTPUT_PATH + 'q_values.txt')
 
-    known_words = calculate_known(brown_words)
+    known_words = calculate_known(words)
     save_object(known_words, 'objects/known_words.pkl')
-    brown_words_rare = replace_rare(brown_words, known_words)
-    q3_output(brown_words_rare, OUTPUT_PATH + "B3.txt")
+    words_rare = replace_rare(words, known_words)
 
-    e_values, taglist = calc_emission(brown_words_rare, brown_tags)
+    e_values, tagset = calculate_e(words_rare, tags)
     save_object(e_values, 'objects/e_values.pkl')
-    save_object(taglist, 'objects/taglist.pkl')
-    q4_output(e_values, OUTPUT_PATH + "B4.txt")
+    save_object(tagset, 'objects/tagset.pkl')
+    output_e(e_values, OUTPUT_PATH + "e_values.txt")
 
-    del brown_train
-    del brown_words_rare
+    del train
+    del words_rare
 
-    brown_dev = load_data('Brown_dev')
-    brown_dev_words = []
-    for sentence in brown_dev:
-        brown_dev_words.append(sentence.split(" ")[:-1])
-    viterbi_tagged = viterbi(brown_dev_words, taglist, known_words, \
-            q_values, e_values)
-    q5_output(viterbi_tagged, OUTPUT_PATH + 'B5.txt')
+    dev = load_data('Brown_dev')
+    dev_words = []
+    for sentence in dev:
+        dev_words.append(sentence.split(" ")[:-1])
+    viterbi_tagged = \
+        viterbi(dev_words, tagset, known_words, q_values, e_values)
+    output_viterbi_tagged(viterbi_tagged, OUTPUT_PATH + 'viterbi_tagged.txt')
 
-    #nltk_tagged = nltk_tagger(brown_words, brown_tags, brown_dev_words)
-    #q6_output(nltk_tagged, OUTPUT_PATH + 'B6.txt')
+    #nltk_tagged = nltk_tagger(words, tags, dev_words)
+    #output_nltk_tagged(nltk_tagged, OUTPUT_PATH + 'B6.txt')
 
     print("Ellapsed time: " + str(clock()) + ' sec')
 

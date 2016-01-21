@@ -1,2 +1,0 @@
-#!/bin/sh
-head -5 output/A3.txt

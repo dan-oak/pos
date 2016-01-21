@@ -421,7 +421,7 @@ def main():
         dev_words.append(sentence.split(" ")[:-1])
     viterbi_tagged = \
         viterbi(dev_words, tagset, known_words, q_values, e_values)
-    output_viterbi_tagged(viterbi_tagged, OUTPUT_PATH + 'viterbi_tagged.txt')
+    output_viterbi_tagged(viterbi_tagged, OUTPUT_PATH + 'Brown_tagged_dev.txt')
 
     #nltk_tagged = nltk_tagger(words, tags, dev_words)
     #output_nltk_tagged(nltk_tagged, OUTPUT_PATH + 'B6.txt')

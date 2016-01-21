@@ -1,17 +1,16 @@
-import sys
+import sys, os.path
 
 def main():
     if len(sys.argv) < 3:
-	print "Usage: python pos.py <tagger output> <reference file>"
-	exit(1)
+        print("Usage: python " + os.path.basename(__file__) +
+                " <tagger output> <reference file>")
+        exit(1)
 
-    infile = open(sys.argv[1], "r")
-    user_sentences = infile.readlines()
-    infile.close()
+    with open(sys.argv[1], "r") as f:
+        user_sentences = f.readlines()
 
-    infile = open(sys.argv[2], "r")
-    correct_sentences = infile.readlines()
-    infile.close()
+    with open(sys.argv[2], "r") as f:
+        correct_sentences = f.readlines()
 
     num_correct = 0
     total = 0
@@ -20,6 +19,7 @@ def main():
         user_tok = user_sent.split()
         correct_tok = correct_sent.split()
 
+        # TODO: compare corresponding sentences
         if len(user_tok) != len(correct_tok):
             continue
 
@@ -30,7 +30,7 @@ def main():
 
     score = float(num_correct) / total * 100
 
-    print "Percent correct tags:", score
+    print("{:d}% of tags are correct".format(int(score)))
 
 
 if __name__ == "__main__": main()

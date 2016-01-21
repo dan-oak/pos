@@ -1,29 +1,44 @@
-import wikipedia, nltk, main, pickle
+import wikipedia as wi, nltk, main, pickle
 
-titles = wikipedia.random(pages=1)
-if type(titles) != list:
-    titles = [titles]
-print(titles)
-sentences = []
 
-def select_sentence(sentences):
-    pass
+# TODO: consider using https://en.wikipedia.org/wiki/Special:Random
+# https://en.wikipedia.org/wiki/Special:RandomInCategory/Mathematics
 
-tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+# FIXME: this selects only uncategorized articles :<
+" titles "
+t = wi.random(pages=5)
 
-object_names = 'e_values known_words q_values taglist'.split()
-objects = {}
-for name in object_names:
-    with open('objects/' + name + '.pkl', 'rb') as object_file:
-        objects[name] = pickle.load(object_file)
+print('Random wikipedia articles: "' + '", "'.join(t) + '"')
 
-for title in titles:
-    sentences = tokenizer.tokenize(wikipedia.summary(title))
-    sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
-    print(main.viterbi(sentences,
-        objects['taglist'],
-        objects['known_words'],
-        objects['q_values'],
-        objects['e_values']))
-    #selected sentence = select_sentence(wikipedia.summary(title))
+z = nltk.data.load('tokenizers/punkt/english.pickle')
+
+def c(s):
+    return 10 < len(s) < 17
+
+""" model parameters """
+p = {}
+for n in 'e_values known_words q_values taglist'.split():
+    with open('objects/' + n + '.pkl', 'rb') as f:
+        p[n] = pickle.load(f)
+
+""" sentences """
+s = [] 
+
+for t in t:
+
+    print('Downloading and processing summary of "' + t + '" ...')
+
+    """ list of summary word-tokenized sentences """
+    ss = [nltk.word_tokenize(s) for s in z.tokenize(wi.summary(t))]
+    
+    s.extend(list(filter(c, ss)))
+    #selected sentence = select_sentence(wikipedia.summary(t))
     #sentences.append(selected_sentence)
+
+print("Number of selected sentences: {}".format(len(s)))
+
+print("".join(main.viterbi(s,
+    p['taglist'],
+    p['known_words'],
+    p['q_values'],
+    p['e_values'])))

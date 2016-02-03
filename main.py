@@ -166,7 +166,7 @@ def replace_rare(sentences, known_words):
 # and the second is a tag, and the value is the log probability of the emission
 # of the word given the tag
 # The second return value is a set of all possible tags for this data set
-# FIXME: total nonesence. extremely bad design
+# FIXME: total nonesence. extremely bad design to return e_values and taglist
 def calculate_e(toks, tags):
     """
     Calculates emission probabilities and creates a set of all possible tags.
@@ -198,29 +198,26 @@ def calculate_e(toks, tags):
 -------------------------------------------------------------------------------
 """
 
-# This function takes data to tag (brown_dev_words), a set of all possible tags
-# (taglist), a set of all known words (known_words),
-# trigram probabilities (q_values) and emission probabilities (e_values) and
-# outputs a list where every element is a tagged sentence
-# (in the WORD/TAG format, separated by spaces and with a newline in the end,
-# just like our input tagged data)
-# brown_dev_words is a python list where every element is a python list of the
-# words of a particular sentence.
-# taglist is a set of all possible tags
-# known_words is a set of all known words
-# q_values is from the return of calculate_q()
-# e_values is from the return of calculate_e()
-# The return value is a list of tagged sentences in the format "WORD/TAG",
-# separated by spaces. Each sentence is a string with a
-# terminal newline, not a list of tokens. Remember also that the output should
-# not contain the "_RARE_" symbol, but rather the
-# original words of the sentence!
-def viterbi(dev_words, tagset, known_words, Q, E):
+def tag_viterbi(tokens, tagset, known_words, Q, E):
     """
+    Tags tokens of a sentence.
 
+    Parameters
+    ----------
+    tokens : list of str
+    tagset : set of str
+    known_words : list of str
+        List of known words, those that occur more than RARE_MAX_FREQ times in
+        corpus.
+    Q : dict of tuple:float 
+    E : dict of tuple:float 
+
+    Returns
+    -------
+    tagged : list of tuples of str
+        List of sentence tokens together with its tags in tuples.
 
     """
-    tagged = []
     tags = tagset.difference({STAR,STOP})
     def S(n):
         if n < 2:
@@ -229,65 +226,58 @@ def viterbi(dev_words, tagset, known_words, Q, E):
             return [STOP]
         else:
             return tags
-    N = len(dev_words)
-    i = 0
-    for sentence in dev_words:
-        i += 1
-        T = len(sentence)
-        pi = [{STAR: {STAR: 0.0}}]
-        bp = [None]
-        for k in range(2,T+2):
-            pi.append({})
-            bp.append({})
-            for u in S(k-1):
-                pi[k-1][u] = {}
-                bp[k-1][u] = {}
-                for v in S(k):
-                    pi_max = float('-inf')
-                    w_max = None
-                    for w in pi[k-2]:
-                        #if not w in pi[k-2] or not u in pi[k-2][w]:
-                        #    continue
-                        q = Q.get((w,u,v),LOG_OF_ZERO)
-                        if q == LOG_OF_ZERO:
-                            s = q
+    T = len(tokens)
+    pi = [{STAR: {STAR: 0.0}}]
+    bp = [None]
+    for k in range(2,T+2):
+        pi.append({})
+        bp.append({})
+        for u in S(k-1):
+            pi[k-1][u] = {}
+            bp[k-1][u] = {}
+            for v in S(k):
+                pi_max = float('-inf')
+                w_max = None
+                for w in pi[k-2]:
+                    #if not w in pi[k-2] or not u in pi[k-2][w]:
+                    #    continue
+                    q = Q.get((w,u,v),LOG_OF_ZERO)
+                    if q == LOG_OF_ZERO:
+                        s = q
+                    else:
+                        p = pi[k-2][w][u]
+                        e_word = tokens[k-2]
+                        if not e_word in known_words:
+                            e_word = RARE
+                        if not (e_word,v) in E:
+                            s = LOG_OF_ZERO
                         else:
-                            p = pi[k-2][w][u]
-                            e_word = sentence[k-2]
-                            if not e_word in known_words:
-                                e_word = RARE
-                            if not (e_word,v) in E:
-                                s = LOG_OF_ZERO
-                            else:
-                                e = E[e_word,v]
-                                s = p + q + e
-                        if s > pi_max:
-                            pi_max = s
-                            w_max = w
-                    if not w_max:
-                        continue
-                    pi[k-1][u][v] = pi_max
-                    bp[k-1][u][v] = w_max
-        uv = None
-        pi_max = float('-inf')
-        for u in S(T):
-            for v in S(T+1):
-                q = Q.get((u,v,STOP),LOG_OF_ZERO)
-                if q == LOG_OF_ZERO:
-                    s = q
-                else:
-                    s = pi[T][u][v] + q
-                if s > pi_max:
-                    pi_max = s
-                    uv = (u,v)
-        y = ['X']*(T+2)
-        y[T] = uv[0]
-        y[T+1] = uv[1]
-        for k in reversed(range(T)):
-            y[k] = bp[k+1][y[k+1]][y[k+2]]
-        tagged.append(" ".join(["{0}/{1}".format(*pair) \
-                for pair in zip(sentence,y[2:])])+" \n")
-    return tagged
+                            e = E[e_word,v]
+                            s = p + q + e
+                    if s > pi_max:
+                        pi_max = s
+                        w_max = w
+                if not w_max:
+                    continue
+                pi[k-1][u][v], bp[k-1][u][v] = pi_max, w_max
+    uv = None
+    pi_max = float('-inf')
+    for u in S(T):
+        for v in S(T+1):
+            q = Q.get((u,v,STOP),LOG_OF_ZERO)
+            if q == LOG_OF_ZERO:
+                s = q
+            else:
+                s = pi[T][u][v] + q
+            if s > pi_max:
+                pi_max = s
+                uv = (u,v)
+    y = ['X']*(T+2)
+    y[T] = uv[0]
+    y[T+1] = uv[1]
+    for k in reversed(range(T)):
+        y[k] = bp[k+1][y[k+1]][y[k+2]]
+    return zip(tokens,y[2:])
 
 """
 3.b NLTK native tagging
@@ -419,8 +409,9 @@ def main():
     dev_words = []
     for sentence in dev:
         dev_words.append(sentence.split(" ")[:-1])
-    viterbi_tagged = \
-        viterbi(dev_words, tagset, known_words, q_values, e_values)
+    viterbi_tagged = [ \
+        tag_viterbi(tokens, tagset, known_words, q_values, e_values) \
+        for tokens in dev_words]
     output_viterbi_tagged(viterbi_tagged, OUTPUT_PATH + 'Brown_tagged_dev.txt')
 
     #nltk_tagged = nltk_tagger(words, tags, dev_words)

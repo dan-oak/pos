@@ -410,7 +410,8 @@ def main():
     for sentence in dev:
         dev_words.append(sentence.split(" ")[:-1])
     viterbi_tagged = [ \
-        tag_viterbi(tokens, tagset, known_words, q_values, e_values) \
+        " ".join(["{0}/{1}".format(*x) for x in \
+            tag_viterbi(tokens, tagset, known_words, q_values, e_values)]) \
         for tokens in dev_words]
     output_viterbi_tagged(viterbi_tagged, OUTPUT_PATH + 'Brown_tagged_dev.txt')
 

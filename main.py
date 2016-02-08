@@ -364,6 +364,7 @@ def output_nltk_tagged(tagged, filename):
 
 DATA_PATH = 'data/'
 OUTPUT_PATH = 'output/'
+PARAMETERS_PATH = 'parameters/'
 
 def load_data(name):
     infile = open(DATA_PATH + name + ".txt", "r")
@@ -375,6 +376,22 @@ def save_object(obj, filename):
     with open(filename, 'wb') as output:
         pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
 
+def load_viterbi_parameters():
+    """
+    Loads parameters to viterbi algorithm.
+
+    Returns
+    -------
+    tagset, known_words, q_values, e_values
+
+    """
+    names = 'tagset known_words q_values e_values'.split()
+    objects = {}
+    for name in names:
+        with open('objects/' + name + '.pkl', 'rb') as object_file:
+            objects[name] = pickle.load(object_file)
+
+    return tuple([objects[name] for name in names])
 
 """
 5. Main

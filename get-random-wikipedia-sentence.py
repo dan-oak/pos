@@ -17,7 +17,7 @@ def c(s):
 
 """ model parameters """
 p = {}
-for n in 'e_values known_words q_values taglist'.split():
+for n in 'e_values known_words q_values tagset'.split():
     with open('objects/' + n + '.pkl', 'rb') as f:
         p[n] = pickle.load(f)
 
@@ -32,13 +32,14 @@ for t in t:
     ss = [nltk.word_tokenize(s) for s in z.tokenize(wi.summary(t))]
     
     s.extend(list(filter(c, ss)))
-    #selected sentence = select_sentence(wikipedia.summary(t))
-    #sentences.append(selected_sentence)
 
 print("Number of selected sentences: {}".format(len(s)))
 
-print("".join(main.viterbi(s,
-    p['taglist'],
+for s0 in [" ".join(l) for l in s]:
+    print(s0)
+
+print("".join(main.tag_viterbi(s,
+    p['tagset'],
     p['known_words'],
     p['q_values'],
     p['e_values'])))

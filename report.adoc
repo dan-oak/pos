@@ -44,6 +44,13 @@ D N V D N
 We will use latexmath:[$x_1 \ldots  x_n$] to denote the input and $y_1 \ldots  y_n$ to
 denote the output.
 
+==== Model parameters
+
+* tagset 
+* known_words
+* q
+* e
+
 [bibliography]
 == Список літератури
 

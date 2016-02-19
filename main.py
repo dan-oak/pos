@@ -338,7 +338,6 @@ def output_q(q_values, filename):
         outfile.write(line + '\n')
     outfile.close()
 
-# This function takes the output from calculate_es() and outputs it
 def output_e(e_values, filename):
     outfile = open(filename, "w")
     emissions = list(e_values.keys())
@@ -348,15 +347,7 @@ def output_e(e_values, filename):
         outfile.write(output + '\n')
     outfile.close()
 
-# This function takes the output of viterbi() and outputs it to file
-def output_viterbi_tagged(tagged, filename):
-    outfile = open(filename, 'w')
-    for sentence in tagged:
-        outfile.write(sentence)
-    outfile.close()
-
-# This function takes the output of nltk_tagger() and outputs it to file
-def output_nltk_tagged(tagged, filename):
+def output_tagged(tagged, filename):
     outfile = open(filename, 'w')
     for sentence in tagged:
         outfile.write(sentence)

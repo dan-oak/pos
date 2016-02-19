@@ -388,7 +388,7 @@ def load_viterbi_parameters():
     names = 'tagset known_words q_values e_values'.split()
     objects = {}
     for name in names:
-        with open('objects/' + name + '.pkl', 'rb') as object_file:
+        with open(PARAMETERS_PATH + name + '.pkl', 'rb') as object_file:
             objects[name] = pickle.load(object_file)
 
     return tuple([objects[name] for name in names])
@@ -407,16 +407,16 @@ def main():
     train = load_data('Brown_tagged_train')
     words, tags = split_wordtags(train)
     q_values = calculate_q(tags)
-    save_object(q_values, 'objects/q_values.pkl')
+    save_object(q_values, PARAMETERS_PATH + 'q_values.pkl')
     output_q(q_values, OUTPUT_PATH + 'q_values.txt')
 
     known_words = calculate_known(words)
-    save_object(known_words, 'objects/known_words.pkl')
+    save_object(known_words, PARAMETERS_PATH + 'known_words.pkl')
     words_rare = replace_rare(words, known_words)
 
     e_values, tagset = calculate_e(words_rare, tags)
-    save_object(e_values, 'objects/e_values.pkl')
-    save_object(tagset, 'objects/tagset.pkl')
+    save_object(e_values, PARAMETERS_PATH + 'e_values.pkl')
+    save_object(tagset, PARAMETERS_PATH + 'tagset.pkl')
     output_e(e_values, OUTPUT_PATH + "e_values.txt")
 
     del train

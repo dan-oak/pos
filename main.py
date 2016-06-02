@@ -350,7 +350,7 @@ def output_e(e_values, filename):
 def output_tagged(tagged, filename):
     outfile = open(filename, 'w')
     for sentence in tagged:
-        outfile.write(sentence)
+        outfile.write(sentence + '\n')
     outfile.close()
 
 DATA_PATH = 'data/'
@@ -417,11 +417,11 @@ def main():
     dev_words = []
     for sentence in dev:
         dev_words.append(sentence.split(" ")[:-1])
-    viterbi_tagged = [ \
+    viterbi_tagged = ( \
         " ".join(["{0}/{1}".format(*x) for x in \
             tag_viterbi(tokens, tagset, known_words, q_values, e_values)]) \
-        for tokens in dev_words]
-    output_viterbi_tagged(viterbi_tagged, OUTPUT_PATH + 'Brown_tagged_dev.txt')
+        for tokens in dev_words)
+    output_tagged(viterbi_tagged, OUTPUT_PATH + 'Brown_tagged_dev.txt')
 
     #nltk_tagged = nltk_tagger(words, tags, dev_words)
     #output_nltk_tagged(nltk_tagged, OUTPUT_PATH + 'B6.txt')

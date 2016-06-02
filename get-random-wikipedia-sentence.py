@@ -1,4 +1,5 @@
 import wikipedia as wi, nltk, main, pickle
+import sys
 
 
 # TODO: consider using https://en.wikipedia.org/wiki/Special:Random
@@ -6,7 +7,11 @@ import wikipedia as wi, nltk, main, pickle
 
 # FIXME: this selects only uncategorized articles :<
 " titles "
-t = wi.random(pages=5)
+n = 5
+if len(sys.argv) > 1:
+    n = int(sys.argv[1])
+t = wi.random(pages=n)
+if type(t) is str: t = [t]
 
 print('Random wikipedia articles: "' + '", "'.join(t) + '"')
 
@@ -18,7 +23,7 @@ def c(s):
 """ model parameters """
 p = {}
 for n in 'e_values known_words q_values tagset'.split():
-    with open('objects/' + n + '.pkl', 'rb') as f:
+    with open('parameters/' + n + '.pkl', 'rb') as f:
         p[n] = pickle.load(f)
 
 """ sentences """
@@ -38,8 +43,9 @@ print("Number of selected sentences: {}".format(len(s)))
 for s0 in [" ".join(l) for l in s]:
     print(s0)
 
-print("".join(main.tag_viterbi(s,
+for tagg in [main.tag_viterbi(sen,
     p['tagset'],
     p['known_words'],
     p['q_values'],
-    p['e_values'])))
+    p['e_values']) for sen in s]:
+    print(" ".join(map(lambda z: "/".join(map(str,z)),tagg)))

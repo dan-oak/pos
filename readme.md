@@ -17,5 +17,5 @@ Written in Python 3.
 
 There is still work to do. Currently I'm using only hidden markov model. Glad to collaborate on this and similar projects!
 
-Regards,
+Regards,  
 Dahn.

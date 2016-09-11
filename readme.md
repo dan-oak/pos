@@ -4,7 +4,6 @@ In corpus linguistics, part-of-speech tagging (POS tagging or POST), also called
 
 Written in Python 3. Dependencies: `scipy`, `numpy`, `nltk`.   
 _NB. all of the above dependencies are not crucial, but still used in code - they will be removed later._  
-Tested on Linux, won't work on Windows yet, because of hardcoded file paths in Linux style - I'm going to fix it soon using `os` module.
 
 ## Usage
     

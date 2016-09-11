@@ -30,6 +30,8 @@ import pickle
 # Binary protocols for serializing and de-serializing object structures
 # https://docs.python.org/3/library/pickle.html
 
+import os
+# Crossplatform filepath related operations.
 
 """
 2. Global parameters and constants
@@ -53,6 +55,8 @@ RARE_MAX_FREQ = 5
 #       http://stackoverflow.com/questions/1628026/python-infinity-any-caveats
 LOG_OF_ZERO = -1000
 
+""" Current directory """
+PATH = os.path.dirname(os.path.realpath(__file__))
 
 """
 3. Function definitions
@@ -320,6 +324,10 @@ def nltk_tagger(brown_words, brown_tags, brown_dev_words):
 """ Delimiter """
 DEL = " "
 
+DATA_PATH = os.path.join(PATH, 'data')
+OUTPUT_PATH = os.path.join(PATH, 'output')
+PARAMETERS_PATH = os.path.join(PATH, 'parameters')
+
 """
 4.b Function definitions
 
@@ -352,10 +360,6 @@ def output_tagged(tagged, filename):
     for sentence in tagged:
         outfile.write(sentence + '\n')
     outfile.close()
-
-DATA_PATH = 'data/'
-OUTPUT_PATH = 'output/'
-PARAMETERS_PATH = 'parameters/'
 
 def load_data(name):
     infile = open(DATA_PATH + name + ".txt", "r")

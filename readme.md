@@ -28,6 +28,9 @@ python correctness.py data/Brown_tagged_dev.txt output/Brown_tagged_dev.txt
 Checkout my conference presentation on the project in `misc/presentation.pdf`.
 Althought it's in ukrainian there are cool images! ;)
 
+![Hidden Markov Model](/misc/screenshot-2.png)
+![Exupéry quote](/misc/screenshot-1.png)
+
 ## Perspective
 
 There is still work to do: documentation, code refinement, model improvement etc. Currently I'm using only hidden markov model. 

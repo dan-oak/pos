@@ -6,13 +6,27 @@ Written in Python 3. Dependencies: `scipy`, `numpy`, `nltk`.
 _NB. all of the above dependencies are not crucial, but still used in code - they will be removed later._  
 
 ## Usage
+_Note_: use Python 3 (i.e. `python3` instead of `python` on some systems)
     
-    python postag-interactive.py
+### Interactive sentence tagger
+```
+python postag-interactive.py
+```
+
+### Awesome statistics
+```
+python correctness.py data/Brown_tagged_dev.txt output/Brown_tagged_dev.txt
+```
 
 ### Example
 
     Sentence > Hello, part-of-speech tagger! NLP is an exciting field of applicable science!
     Tagged : Hello/PRT ,/. part-of-speech/NOUN tagger/NOUN !/. NLP/NOUN is/VERB an/DET exciting/ADJ field/NOUN of/ADP applicable/ADJ science/NOUN !/.
+
+## Presentation
+
+Checkout my conference presentation on the project in `misc/presentation.pdf`.
+Althought it's in ukrainian there are cool images! ;)
 
 ## Perspective
 
